@@ -14,7 +14,7 @@ datasource db {
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 model User {
-  id                Int           @id @default(autoincrement())
+  id                String          @id @default(uuid())
   username          String        @unique
   password          String
   email             String        @unique
@@ -23,9 +23,14 @@ model User {
   profilePictureUrl String?
   isPrivate         Boolean       @default(false)
   joinedAt          DateTime      @default(now())
+  isEmailVerified Boolean @default(false)
+  emailVerificationToken String?  @unique
+  emailVerificationTokenExpiry DateTime?
+  passwordResetToken String? @unique
+  passwordResetTokenExpiry DateTime?
   posts             Post[]
-  following  Follower[] @relation("UserFollows") // Users that this user follows
-  followers  Follower[] @relation("UserFollowed") // Users that follow this user
+  following         Follower[] @relation("UserFollows") // Users that this user follows
+  followers         Follower[] @relation("UserFollowed") // Users that follow this user
   comments          Comment[]
   likes             Like[]
   initiatedConversations Conversation[] @relation("initiatedConversations")
@@ -36,8 +41,8 @@ model User {
 }
 
 model Post {
-  id                Int           @id @default(autoincrement())
-  userId            Int
+  id                String           @id @default(uuid())
+  userId            String
   user              User          @relation(fields: [userId], references: [id])
   imageUrl          String
   caption           String?
@@ -50,32 +55,32 @@ model Post {
 }
 
 model PostTag {
-  postId Int  @unique
+  postId String  @unique
   post   Post @relation(fields: [postId], references: [id])
   
-  tagId  Int  @unique
+  tagId  String @unique
   tag    Tag  @relation(fields: [tagId], references: [id])
 
   @@id([postId, tagId])
 }
 
 model Comment {
-  id      Int      @id @default(autoincrement())
-  postId  Int
+  id      String      @id @default(uuid())
+  postId  String
   post    Post     @relation(fields: [postId], references: [id])
-  userId  Int
+  userId  String
   user    User     @relation(fields: [userId], references: [id])
   content String
-  repliedToCommentId Int?
+  repliedToCommentId String?
   repliedToComment   Comment? @relation("CommentToComment", fields: [repliedToCommentId], references: [id])
   replies            Comment[] @relation("CommentToComment")
   commentedAt        DateTime  @default(now())
 }
 
 model Like {
-  postId Int
+  postId String
   post   Post @relation(fields: [postId], references: [id])
-  userId Int
+  userId String
   user   User @relation(fields: [userId], references: [id])
   likedAt DateTime @default(now())
 
@@ -83,37 +88,37 @@ model Like {
 }
 
 model Follower {
-  id           Int      @id @default(autoincrement())
-  followingId  Int      // The ID of the user being followed
+  id           String      @id @default(uuid())
+  followingId  String      // The ID of the user being followed
   following    User     @relation("UserFollowed", fields: [followingId], references: [id])
-  followerId   Int      // The ID of the user who follows
+  followerId   String      // The ID of the user who follows
   follower     User     @relation("UserFollows", fields: [followerId], references: [id])
   followedAt   DateTime @default(now())
 }
 
 
 model Tag {
-  id    Int      @id @default(autoincrement())
+  id    String      @id @default(uuid())
   name  String   @unique
   posts PostTag[]
 }
 
 model Conversation {
-  id       Int    @id @default(autoincrement())
+  id       String    @id @default(uuid())
   redisKey String
   
-  initiatorId Int
+  initiatorId String
   initiator   User   @relation("initiatedConversations", fields: [initiatorId], references: [id])
   
-  recipientId Int
+  recipientId String
   recipient   User   @relation("receivedConversations", fields: [recipientId], references: [id])
 }
 
 
 
 model Notification {
-  id           Int      @id @default(autoincrement())
-  userId       Int
+  id           String      @id @default(uuid())
+  userId       String
   user         User     @relation(fields: [userId], references: [id])
   type         String
   referenceId  Int
@@ -122,8 +127,8 @@ model Notification {
 }
 
 model Story {
-  id        Int      @id @default(autoincrement())
-  userId    Int
+  id        String      @id @default(uuid())
+  userId    String
   user      User     @relation(fields: [userId], references: [id])
   imageUrl  String
   caption   String?
@@ -132,9 +137,9 @@ model Story {
 }
 
 model UserTag {
-  postId Int
+  postId String
   post   Post @relation(fields: [postId], references: [id])
-  userId Int
+  userId String
   user   User @relation(fields: [userId], references: [id])
 
   @@id([postId, userId])
