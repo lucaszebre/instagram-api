@@ -1,0 +1,141 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+model User {
+  id                Int           @id @default(autoincrement())
+  username          String        @unique
+  password          String
+  email             String        @unique
+  fullName          String?
+  bio               String?
+  profilePictureUrl String?
+  isPrivate         Boolean       @default(false)
+  joinedAt          DateTime      @default(now())
+  posts             Post[]
+  following  Follower[] @relation("UserFollows") // Users that this user follows
+  followers  Follower[] @relation("UserFollowed") // Users that follow this user
+  comments          Comment[]
+  likes             Like[]
+  initiatedConversations Conversation[] @relation("initiatedConversations")
+  receivedConversations  Conversation[] @relation("receivedConversations")
+  notifications     Notification[]
+  stories           Story[]
+  taggedPosts       UserTag[]
+}
+
+model Post {
+  id                Int           @id @default(autoincrement())
+  userId            Int
+  user              User          @relation(fields: [userId], references: [id])
+  imageUrl          String
+  caption           String?
+  location          String?
+  postedAt          DateTime      @default(now())
+  comments          Comment[]
+  likes             Like[]
+  tags  PostTag[]
+  taggedUsers       UserTag[]
+}
+
+model PostTag {
+  postId Int  @unique
+  post   Post @relation(fields: [postId], references: [id])
+  
+  tagId  Int  @unique
+  tag    Tag  @relation(fields: [tagId], references: [id])
+
+  @@id([postId, tagId])
+}
+
+model Comment {
+  id      Int      @id @default(autoincrement())
+  postId  Int
+  post    Post     @relation(fields: [postId], references: [id])
+  userId  Int
+  user    User     @relation(fields: [userId], references: [id])
+  content String
+  repliedToCommentId Int?
+  repliedToComment   Comment? @relation("CommentToComment", fields: [repliedToCommentId], references: [id])
+  replies            Comment[] @relation("CommentToComment")
+  commentedAt        DateTime  @default(now())
+}
+
+model Like {
+  postId Int
+  post   Post @relation(fields: [postId], references: [id])
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+  likedAt DateTime @default(now())
+
+  @@id([postId, userId])
+}
+
+model Follower {
+  id           Int      @id @default(autoincrement())
+  followingId  Int      // The ID of the user being followed
+  following    User     @relation("UserFollowed", fields: [followingId], references: [id])
+  followerId   Int      // The ID of the user who follows
+  follower     User     @relation("UserFollows", fields: [followerId], references: [id])
+  followedAt   DateTime @default(now())
+}
+
+
+model Tag {
+  id    Int      @id @default(autoincrement())
+  name  String   @unique
+  posts PostTag[]
+}
+
+model Conversation {
+  id       Int    @id @default(autoincrement())
+  redisKey String
+  
+  initiatorId Int
+  initiator   User   @relation("initiatedConversations", fields: [initiatorId], references: [id])
+  
+  recipientId Int
+  recipient   User   @relation("receivedConversations", fields: [recipientId], references: [id])
+}
+
+
+
+model Notification {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  user         User     @relation(fields: [userId], references: [id])
+  type         String
+  referenceId  Int
+  isRead       Boolean  @default(false)
+  createdAt    DateTime @default(now())
+}
+
+model Story {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  imageUrl  String
+  caption   String?
+  createdAt DateTime @default(now())
+  expiresAt DateTime @default(now())
+}
+
+model UserTag {
+  postId Int
+  post   Post @relation(fields: [postId], references: [id])
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  @@id([postId, userId])
+}
