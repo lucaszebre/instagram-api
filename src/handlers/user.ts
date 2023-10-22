@@ -2,7 +2,7 @@ import prisma from '../db'
 import * as dotenv from 'dotenv';
 dotenv.config();
 import { comparePasswords, createJWT, hashPassword } from '../modules/auth'
-import { Resend } from 'resend';
+import { Resend } from "resend";
 import uuid from 'uuid'
 
 const resend = new Resend(process.env.RESEND);
