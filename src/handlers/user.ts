@@ -32,7 +32,7 @@ export const createNewUser = async (req, res) => {
       },
     });
 
-    resend.sendEmail({ 
+    await resend.emails.send({ 
       from: 'onboarding@resend.dev',
       to: req.body.email,
       subject: 'Email Verification',
