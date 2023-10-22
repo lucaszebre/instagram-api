@@ -32,11 +32,11 @@ export const createNewUser = async (req, res) => {
       },
     });
 
-    await resend.emails.send({ 
-      from: 'onboarding@resend.dev',
-      to: req.body.email,
-      subject: 'Email Verification',
-      text: `Click on this link to verify your email: https://yourdomain.com/verify-email?token=${emailVerificationToken}`
+    await resend.emails.send({
+      from: "Acme <onboarding@resend.dev>",
+      to: ["delivered@resend.dev"],
+      subject: "hello world",
+      html: "<strong>it works!</strong>",
     });
 
     const token = createJWT(user);
