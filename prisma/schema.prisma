@@ -24,10 +24,6 @@ model User {
   isPrivate         Boolean       @default(false)
   joinedAt          DateTime      @default(now())
   isEmailVerified Boolean @default(false)
-  emailVerificationToken String?  @unique
-  emailVerificationTokenExpiry DateTime?
-  passwordResetToken String? @unique
-  passwordResetTokenExpiry DateTime?
   posts             Post[]
   following         Follower[] @relation("UserFollows") // Users that this user follows
   followers         Follower[] @relation("UserFollowed") // Users that follow this user
